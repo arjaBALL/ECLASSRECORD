@@ -1,0 +1,85 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Document</title>
+    <link rel="stylesheet" crossorigin href="/assets/index-6qQaCwGh.css">
+  </head>
+  <body grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-4>
+    <header class="dashboard-header">
+      <button
+        type="button"
+        id="resize"
+        class="w-10 h-10 border-2 border-gray-400 rounded bg-transparent">
+        &#9776;
+      </button>
+    </header>
+
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-navigation">
+        <button class="sidebar-btn" onclick="window.location.href='dash.php'">
+          <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
+          <span class="text">Dashboard</span>
+        </button>
+        <button
+          class="sidebar-btn"
+          onclick="window.location.href='inventory.php'">
+          <span class="icon"><i class="fas fa-box"></i></span>
+          <span class="text">Inventory</span>
+        </button>
+        <button class="sidebar-btn" onclick="window.location.href='index.php'">
+          <span class="icon"><i class="fas fa-plus-circle"></i></span>
+          <span class="text">Add New Item</span>
+        </button>
+        <button class="sidebar-btn" onclick="window.location.href='user.php'">
+          <span class="icon"><i class="fas fa-user"></i></span>
+          <span class="text">Add user</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main p-3">
+      <div class="flex flex-wrap gap-4">
+        <!-- Welcome Card -->
+        <div
+          class="card bg-white shadow-md rounded-lg p-6 w-full sm:w-[48%] lg:w-[23%]">
+          <h2 class="text-lg font-semibold">Welcome John Doe!</h2>
+        </div>
+
+        <!-- Orders Card -->
+        <div
+          class="card bg-white shadow-md rounded-lg p-6 w-full sm:w-[48%] lg:w-[23%]">
+          <h2 class="text-lg font-semibold">Orders - 2</h2>
+        </div>
+
+        <!-- Shipped Card -->
+        <div
+          class="card bg-white shadow-md rounded-lg p-6 w-full sm:w-[48%] lg:w-[23%]">
+          <h2 class="text-lg font-semibold">Shipped - 3</h2>
+        </div>
+
+        <!-- Pending Card -->
+        <div
+          class="card bg-white shadow-md rounded-lg p-6 w-full sm:w-[48%] lg:w-[23%]">
+          <h2 class="text-lg font-semibold">Pending - 4</h2>
+        </div>
+
+        <div
+          class="card bg-white shadow-md rounded-lg p-6 w-full sm:w-[48%] lg:w-[23%]">
+          <h2 class="text-lg font-semibold">Pending - 4</h2>
+        </div>
+      </div>
+    </main>
+
+    <footer class="dashboard-footer">Footer</footer>
+    <script src="style.js"></script>
+  </body>
+</html>

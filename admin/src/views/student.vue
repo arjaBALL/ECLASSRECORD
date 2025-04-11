@@ -1,166 +1,271 @@
 <!-- @format -->
 
 <template>
-  <div
-    class="login-container"
-    :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <div id="item-0" :class="{ collapsed: isSidebarCollapsed }">
-      <div class="logo">
-        <img src="/image/logo.png" alt="Logo" class="logo-image" />
-
-        <h5 class="name" :class="{ 'hidden-name': isSidebarCollapsed }">
-          Asian Development Foundation College
-        </h5>
-      </div>
-
-      <div class="button-container">
-        <button class="btn" :class="{ 'collapsed-btn': isSidebarCollapsed }">
-          <font-awesome-icon
-            :icon="['fas', 'tachometer-alt']"
-            class="custom-icon" />
-
-          <span v-if="!isSidebarCollapsed"> Dashboard </span>
-        </button>
-
-        <div class="relative block text-left">
-          <button
-            @click="toggleDropdown(1)"
-            class="btn"
-            :class="{ 'collapsed-btn': isSidebarCollapsed }">
-            <font-awesome-icon
-              :icon="['fas', 'clipboard-list']"
-              class="custom-icon" />
-
-            <span v-if="!isSidebarCollapsed">
-              <div class="btn-nm">Class Record</div>
-              <font-awesome-icon
-                :icon="['fas', 'angle-down']"
-                class="arrow transition-transform duration-300"
-                :class="{ 'rotate-180': isDropdownOpen(1) }" />
-            </span>
-          </button>
-
-          <div
-            v-if="activeDropdown === 1 && !isSidebarCollapsed"
-            class="dropdown">
-            <button class="side-btn" @click="goToGrades">Grades</button>
-
-            <button class="side-btn" @click="goToAttendance">Attendance</button>
-          </div>
+  <div class="app-wrapper">
+    <div
+      class="box-container"
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+      <section class="nav-container" :class="{ collapsed: isSidebarCollapsed }">
+        <div class="text-center py-2">
+          <img
+            src="/image/logo.png"
+            alt="Responsive image"
+            class="img-fluid logo mx-auto d-block"
+            :class="isSidebarCollapsed ? 'w-60' : 'w-50'" />
+          <h5 class="mb-2" v-if="!isSidebarCollapsed">
+            Asian Development Foundation College
+          </h5>
         </div>
 
-        <div class="relative block text-left">
-          <button
-            @click="toggleDropdown(2)"
-            class="btn"
-            :class="{ 'collapsed-btn': isSidebarCollapsed }">
+        <div class="nav flex-column nav-pills w-100">
+          <router-link
+            class="nav-link text-start mb-2 d-flex align-items-center nav-hover"
+            :class="{ 'justify-content-center': isSidebarCollapsed }"
+            v-for="(item, index) in menuItems"
+            :key="index"
+            :to="item.to || '#'"
+            @click.prevent="!item.to ? handleMenuAction(item) : null">
             <font-awesome-icon
-              :icon="['fas', 'user-graduate']"
-              class="custom-icon" />
-
-            <span v-if="!isSidebarCollapsed">
-              <div class="btn-nm1">Student</div>
-              <font-awesome-icon
-                :icon="['fas', 'angle-down']"
-                class="arrow1 transition-transform duration-300"
-                :class="{ 'rotate-180': isDropdownOpen(2) }" />
-            </span>
+              :icon="item.icon"
+              :class="{ 'me-2': !isSidebarCollapsed }" />
+            <span v-if="!isSidebarCollapsed">{{ item.text }}</span>
+          </router-link>
+        </div>
+      </section>
+      <section class="top-header">
+        <div class="header-content">
+          <button
+            class="btn btn-sm btn-outline-light toggle-btn"
+            @click="toggleSidebar">
+            <font-awesome-icon :icon="['fas', 'bars']" />
           </button>
+          <!-- Add other header content here if needed -->
+        </div>
+      </section>
 
-          <div
-            v-if="activeDropdown === 2 && !isSidebarCollapsed"
-            class="dropdown">
-            <button class="side-btn" @click="goToGrades">Grades</button>
+      <section class="sub-navigation"></section>
+      <section class="main-container">
+        <div class="add-container">
+          Add Student
+          <form @submit.prevent="handleaddstudent" class="login-form w-100">
+            <div
+              v-if="responseMessage"
+              :class="
+                responseType === 'success' ? 'success-message' : 'error-message'
+              "
+              class="response-alert">
+              {{ responseMessage }}
+            </div>
 
-            <button class="side-btn" @click="goToAttendance">Attendance</button>
+            <div class="inpt-grp">
+              <label>Student ID</label>
+              <input
+                type="text"
+                v-model="studentid"
+                placeholder="Enter Student ID" />
+              <p class="error-message">{{ studentidError }}</p>
+            </div>
+            <div class="inpt-grp">
+              <label>Last Name</label>
+              <input
+                type="text"
+                v-model="lastname"
+                placeholder="Enter Last name" />
+              <p class="error-message">{{ lastnameError }}</p>
+            </div>
+
+            <div class="inpt-grp">
+              <label>First Name</label>
+              <input
+                type="text"
+                v-model="firstname"
+                placeholder="Enter First Name" />
+              <p class="error-message">{{ firstnameError }}</p>
+            </div>
+            <div class="inpt-grp">
+              <label>Middle Name</label>
+              <input
+                type="text"
+                v-model="middlename"
+                placeholder="Enter Middle name" />
+              <p class="error-message">{{ middlenameError }}</p>
+            </div>
+            <div class="name-container">
+              <div class="inpt-grp">
+                <label>Year</label>
+                <select
+                  v-model="selectedYear"
+                  id="department"
+                  class="form-select">
+                  <option value="" disabled>Select Year</option>
+                  <option
+                    v-for="year in year_levels"
+                    :key="year.year_id"
+                    :value="year.year_id">
+                    {{ year.year_name }}
+                  </option>
+                </select>
+                <p v-if="yearError" class="error-message">
+                  {{ yearError }}
+                </p>
+                <p v-if="yearLoading" class="loading-message">
+                  Loading year...
+                </p>
+              </div>
+              <div class="inpt-grp">
+                <label>Semester</label>
+                <select
+                  v-model="selectedSemester"
+                  id="department"
+                  class="form-select">
+                  <option value="" disabled>Select Semester</option>
+                  <option
+                    v-for="semester in semesters"
+                    :key="semester.semester_id"
+                    :value="semester.semester_id">
+                    {{ semester.semester_name }}
+                  </option>
+                </select>
+                <p v-if="semesterError" class="error-message">
+                  {{ semesterError }}
+                </p>
+                <p v-if="semesterLoading" class="loading-message">
+                  Loading semester...
+                </p>
+              </div>
+            </div>
+            <div class="inpt-grp">
+              <button type="submit" class="btn-style">Add User</button>
+            </div>
+          </form>
+        </div>
+        <div class="student d-flex justify-content-center align-items-center">
+          <div class="container mx-auto px-4 py-6">
+            <!-- Loading indicator -->
+            <div v-if="loading" class="flex justify-center items-center h-64">
+              <div class="spinner-border text-blue-500" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+              <p class="ml-3 text-gray-600">Loading student data...</p>
+            </div>
+
+            <!-- Error message -->
+            <div
+              v-else-if="error"
+              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert">
+              <span class="block sm:inline">{{ error }}</span>
+              <button
+                @click="fetchStudents"
+                class="ml-4 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded">
+                Retry
+              </button>
+            </div>
+
+            <!-- Students Table -->
+            <div v-else class="overflow-x-auto">
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center d-flex gap-1 justify-content-end">
+                  <select
+                    v-model="sortBy"
+                    class="px-3 py-2 border rounded-md w-auto">
+                    <option value="lastname">Sort by Last Name</option>
+                    <option value="firstname">Sort by First Name</option>
+                  </select>
+                  <input
+                    v-model="searchQuery"
+                    placeholder="Search students..."
+                    class="px-3 py-2 border rounded-md w-auto d-flex" />
+                </div>
+                <div class="text-gray-600">
+                  Total Students: {{ filteredStudents.length }}
+                </div>
+              </div>
+
+              <table
+                class="w-full border-collapse bg-white border rounded shadow-md rounded-lg overflow-hidden w-100">
+                <thead class="bg-blue-100">
+                  <tr class="border-bottom">
+                    <th
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Student ID
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Name
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      First Name
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Middle Name
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="student in paginatedStudents"
+                    :key="student.studentid"
+                    class="border-b hover:bg-gray-100 transition-colors">
+                    <td class="px-4 py-3 border-bottom">
+                      {{ student.studentid }}
+                    </td>
+                    <td class="px-4 py-3 border-bottom">
+                      {{ student.lastname }}
+                    </td>
+                    <td class="px-4 py-3 border-bottom">
+                      {{ student.firstname }}
+                    </td>
+                    <td class="px-4 py-3 border-bottom">
+                      {{ student.middlename || "N/A" }}
+                    </td>
+                  </tr>
+                  <tr v-if="filteredStudents.length === 0">
+                    <td colspan="4" class="text-center py-4 text-gray-500">
+                      No students found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Pagination -->
+              <div class="flex justify-center items-center mt-4 space-x-2">
+                <button
+                  @click="prevPage"
+                  :disabled="currentPage === 1"
+                  class="px-4 py-2 border rounded bg-blue-500 text-white disabled:opacity-50">
+                  Previous
+                </button>
+                <span class="text-gray-600">
+                  Page {{ currentPage }} of {{ totalPages }}
+                </span>
+                <button
+                  @click="nextPage"
+                  :disabled="currentPage === totalPages"
+                  class="px-4 py-2 border rounded bg-blue-500 text-white disabled:opacity-50">
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-
-        <button class="btn" :class="{ 'collapsed-btn': isSidebarCollapsed }">
-          <font-awesome-icon
-            :icon="['fas', 'chalkboard']"
-            class="custom-icon" />
-
-          <span v-if="!isSidebarCollapsed"> Classes </span>
-        </button>
-
-        <button class="btn" :class="{ 'collapsed-btn': isSidebarCollapsed }">
-          <font-awesome-icon
-            :icon="['fas', 'clipboard-check']"
-            class="custom-icon" />
-
-          <span v-if="!isSidebarCollapsed"> Attendance </span>
-        </button>
-
-        <button class="btn" :class="{ 'collapsed-btn': isSidebarCollapsed }">
-          <span v-if="!isSidebarCollapsed"> Button 6 </span>
-        </button>
-      </div>
-    </div>
-
-    <div id="item-1">
-      <button class="btns" id="resize" @click="toggleSidebar">
-        <font-awesome-icon :icon="['fas', 'bars']" />
-      </button>
-
-      <div class="nav">
-        <button class="btns1">
-          <font-awesome-icon :icon="['fas', 'bars']" />
-        </button>
-
-        <button class="btns1">
-          <font-awesome-icon :icon="['fas', 'bell']" />
-        </button>
-
-        <button class="btns1">
-          <font-awesome-icon :icon="['fas', 'clipboard-list']" />
-        </button>
-      </div>
-    </div>
-
-    <div id="item-2">
-      <div id="box-0" class="box cards">
-        <div id="card-1" class="card"></div>
-
-        <div id="card-2" class="card"></div>
-      </div>
-
-      <div id="box-1" class="box"></div>
-
-      <div id="box-2" class="box"></div>
-
-      <div id="box-3" class="box"></div>
-
-      <div id="box-4" class="box"></div>
+      </section>
     </div>
   </div>
 </template>
 
 <script>
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import {
-  faBars,
-  faBell,
-  faClipboardList,
-  faTachometerAlt, // Dashboard
-  faUserGraduate, // Student
-  faChalkboard, // Classes
-  faClipboardCheck, // Attendance
-  faAngleDown,
-} from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { ref, onMounted, watchEffect } from "vue";
 
-// Add icons to the library
-library.add(
-  faBars,
-  faBell,
-  faClipboardList,
-  faTachometerAlt,
-  faUserGraduate,
-  faChalkboard,
-  faClipboardCheck,
-  faAngleDown
-);
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { useIconLibrary } from "@/router/composables/useIconLibrary";
+import { useDataServices } from "../router/composables/useDataServices";
+import { useUIState } from "../router/composables/useUIState";
+import { sidebarMenuConfig } from "../router/composables/menuConfig";
+import { string } from "yup";
 
 export default {
   components: {
@@ -169,399 +274,590 @@ export default {
 
   data() {
     return {
-      activeDropdown: null,
-      isSidebarCollapsed: false,
+      studentid: "",
+      studentidError: "",
+      lastname: "",
+      lastnameError: "",
+      firstname: "",
+      firstnameError: "",
+      middlename: "",
+      middlenameError: "",
+      year_levels: [],
+      selectedYear: "",
+      yearError: "",
+      yearLoading: false,
+      semesters: [],
+      selectedSemester: "",
+      semesterError: "",
+      semesterLoading: false,
+      responseMessage: "",
+      responseType: "",
+      messageTimeout: null,
+
+      //table data
+
+      students: [],
+      loading: true,
+      error: null,
+      searchQuery: "",
+      sortBy: "lastname",
+      currentPage: 1,
+      studentsPerPage: 10,
     };
   },
 
+  mounted() {
+    this.fetchYear_levels();
+    this.fetchSemesters();
+    this.fetchStudents();
+  },
+
   methods: {
-    toggleSidebar() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed;
-      // Close any open dropdowns when sidebar is collapsed
-      if (this.isSidebarCollapsed) {
-        this.activeDropdown = null;
+    async handleaddstudent() {
+      let isValid = true;
+      //reset error message
+      this.studentidError = "";
+      this.lastnameError = "";
+      this.firstnameError = "";
+      this.middlenameError = "";
+      this.yearError = "";
+      this.semesterError = "";
+
+      if (this.messageTimeout) {
+        clearTimeout(this.messageTimeout);
+      }
+
+      // Validate fields
+      if (!this.studentid) {
+        this.studentidError = "Student Id is required";
+        isValid = false;
+      }
+
+      if (!this.lastname) {
+        this.lastnameError = "Last name is required";
+        isValid = false;
+      }
+      if (!this.firstname) {
+        this.firstnameError = "First name is required";
+        isValid = false;
+      }
+      if (!this.middlename) {
+        this.middlenameError = "Middle name is required";
+        isValid = false;
+      }
+      if (!this.selectedYear) {
+        this.yearError = "Year level is required";
+        isValid = false;
+      }
+      if (!this.selectedSemester) {
+        this.semesterError = "Semester is required";
+        isValid = false;
+      }
+
+      if (isValid) {
+        // Prepare form data to send
+        const formData = new FormData();
+        formData.append("studentid", this.studentid);
+        formData.append("lastname", this.lastname);
+        formData.append("firstname", this.firstname);
+        formData.append("middlename", this.middlename);
+        formData.append("year_name", this.selectedYear);
+        formData.append("semester_name", this.selectedSemester);
+
+        try {
+          // Send data to backend API using axios
+          const response = await axios.post(
+            "http://localhost:8080/capstone/admin/backend/api/addstudent.php",
+            formData
+          );
+
+          if (response.data.success) {
+            this.responseMessage = "Student added successfully!";
+            this.responseType = "success";
+            this.resetForm();
+            // this.fetchStudents(); // Assuming you want to refresh the list after adding
+          } else {
+            this.responseMessage = "Error: " + response.data.error;
+            this.responseType = "error";
+          }
+
+          // Auto-clear message after 5 seconds
+          this.messageTimeout = setTimeout(() => {
+            this.responseMessage = "";
+            this.responseType = "";
+          }, 5000);
+
+          console.log(response.data);
+        } catch (error) {
+          console.error("Error adding student:", error);
+          if (error.response) {
+            console.log("Response data:", error.response.data);
+            console.log("Response status:", error.response.status);
+            console.log("Response headers:", error.response.headers);
+          } else if (error.request) {
+            console.log("Request made but no response received", error.request);
+          } else {
+            console.log("Error", error.message);
+          }
+
+          this.responseMessage = "Failed to add student. Please try again.";
+          this.responseType = "error";
+        }
       }
     },
 
-    toggleDropdown(index) {
-      if (this.isSidebarCollapsed) return; // Don't toggle dropdowns when sidebar is collapsed
-      this.activeDropdown = this.activeDropdown === index ? null : index;
+    resetForm() {
+      this.studentid = "";
+      this.lastname = "";
+      this.firstname = "";
+      this.middlename = "";
+      this.selectedYear = "";
+      this.selectedSemester = "";
     },
 
-    goToGrades() {
-      alert("Navigating to Grades...");
-      // Example: this.$router.push('/grades');
+    async fetchYear_levels() {
+      this.yearLoading = true;
+      this.yearError = "";
+
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/capstone/admin/backend/api/fetch_year.php"
+        );
+        this.year_levels = response.data;
+      } catch (error) {
+        console.error("Error fetching year", error);
+        this.yearError = "Unable to load year level. Please try again.";
+      } finally {
+        this.yearLoading = false;
+      }
     },
 
-    goToAttendance() {
-      alert("Navigating to Attendance...");
-      // Example: this.$router.push('/attendance');
+    async fetchSemesters() {
+      this.semesterLoading = true;
+      this.semesterError = "";
+
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/capstone/admin/backend/api/fetch_semester.php"
+        );
+        this.semesters = response.data;
+      } catch (error) {
+        console.error("Error fetching semester", error);
+        this.semesterError = "Unable to load semesters. Please try again.";
+      } finally {
+        this.semesterLoading = false;
+      }
+    },
+
+    async fetchStudents() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/capstone/admin/backend/api/fetchstudent.php"
+        );
+        this.students = response.data;
+        this.loading = false;
+      } catch (error) {
+        this.error = "Failed to fetch students. Please try again.";
+        this.loading = false;
+        console.error("Error fetching students:", error);
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
     },
   },
 
   computed: {
-    isDropdownOpen() {
-      return (index) => this.activeDropdown === index;
+    filteredStudents() {
+      let filtered = this.students;
+
+      // Search filtering
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (student) =>
+            student.lastname.toLowerCase().includes(query) ||
+            student.firstname.toLowerCase().includes(query) ||
+            student.studentid.toString().includes(query)
+        );
+      }
+
+      // Sorting
+      filtered.sort((a, b) => {
+        return a[this.sortBy].localeCompare(b[this.sortBy]);
+      });
+
+      return filtered;
     },
+    paginatedStudents() {
+      const start = (this.currentPage - 1) * this.studentsPerPage;
+      const end = start + this.studentsPerPage;
+      return this.filteredStudents.slice(start, end);
+    },
+    totalPages() {
+      return Math.ceil(this.filteredStudents.length / this.studentsPerPage);
+    },
+    pageNumbers() {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    },
+  },
+
+  setup() {
+    // Sidebar and UI State
+    const { isSidebarCollapsed, toggleSidebar } = useUIState();
+
+    return {
+      isSidebarCollapsed,
+      toggleSidebar,
+      menuItems: sidebarMenuConfig,
+    };
   },
 };
 </script>
 
 <style scoped>
-.login-container {
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+option {
+  color: #333;
+}
+/* Reset PrimeVue styles */
+.custom-input {
+  all: unset; /* Removes all inherited styles */
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 16px;
+  background-color: white;
+}
+
+/* Label styling */
+.input-group label {
+  font-weight: bold;
+  display: block;
+}
+
+.app-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.box-container {
   display: grid;
-  grid-template-rows: 4em auto auto auto; /* First row is fixed at 4em, the rest adjust */
-  grid-template-columns: 15em auto auto auto;
+  grid-template-columns: 15rem 1fr;
+  grid-template-rows: 3rem 3rem 1fr;
+  grid-template-areas:
+    "nav top-header"
+    "nav sub-navigation"
+    "nav main";
+  gap: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
   height: 100vh;
   transition: all 0.3s ease;
-  grid-template-areas:
-    "item-0 item-1 item-1 item-1 item-1 item-1"
-    "item-0 item-2 item-2 item-2 item-2 item-2"
-    "item-0 item-2 item-2 item-2 item-2 item-2"
-    "item-0 item-2 item-2 item-2 item-2 item-2";
-  overflow: hidden;
 }
 
-.sidebar-collapsed {
-  grid-template-columns: 5em auto auto auto;
+.box-container.sidebar-collapsed {
+  grid-template-columns: 5rem 1fr;
 }
 
-#item-0 {
-  background-color: #fffafa;
-  grid-area: item-0;
+.top-header {
+  grid-area: top-header;
+  background-color: #acacac;
+  border-radius: 0.5rem;
   position: sticky;
-  top: 0;
-  left: 0;
-  width: 15em;
-  height: 100vh; /* Ensures full height */
-  transition: width 0.3s ease;
-  overflow: hidden;
 }
-#item-0.collapsed {
-  width: 5em;
-}
-
-.button-container {
+/* New header content container */
+.header-content {
   display: flex;
-  flex-direction: column; /* Stack buttons in a column */
-  align-items: center; /* Center the buttons horizontally */
-  gap: 4px; /* Add space between buttons */
-  padding-top: 1em;
-  justify-content: center; /* Center vertically */
-}
-
-.btn {
-  width: 200px;
-  padding: 10px;
-  font-size: 14px;
-  font-weight: bold;
-  text-align: left;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #ffffff00;
-  color: rgb(84, 84, 84);
-  transition: 0.3s;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.btn-nm {
-  display: inline;
-  margin-right: 2.7rem;
-}
-
-.btn-nm1 {
-  display: inline;
-  margin-right: 5.1rem;
-}
-
-.collapsed-btn {
-  width: 3em;
-  display: flex;
-  justify-content: center;
   align-items: center;
-}
-
-.btn:focus {
-  border-color: royalblue;
-  outline: none;
-  color: #566dff;
-  background-color: #ecf3ff;
-}
-
-.custom-icon {
-  padding-left: 4px;
-  padding-right: 8px;
-}
-
-.dropdown {
-  display: flex;
-  flex-direction: column;
-  width: 175px;
-  margin-top: 4px;
-  margin-left: 1.6em;
-  gap: 4px;
-  color: rgb(53, 53, 53);
-}
-
-.side-btn:hover {
-  border-radius: 4px;
-  background-color: #e4e7ec;
-  width: auto;
-  transition: 0.3s;
-}
-
-.side-btn {
-  width: 200px;
-  padding: 10px 1em;
-  font-size: 16px;
-  text-align: left;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: #ffffff00;
-  color: rgb(0, 0, 0);
-}
-
-#item-1 {
-  display: flex;
-  position: sticky;
-  top: 0; /* Fixes sticky positioning */
-  z-index: 10;
-  background-color: #fffafa;
-  grid-area: item-1;
-  grid-row: span 1;
-  border-left: 1px solid #959baa;
-  border-bottom: 1px solid #959baa;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-}
-
-.btns {
-  width: 2.4em;
-  padding: 10px;
-  font-size: 16px;
-  text-align: center;
-  border: none;
-  border-radius: 8px;
-  border: 1px solid #708090;
-  cursor: pointer;
-  background-color: #007bff00;
-  color: rgb(56, 56, 56);
-  transition: 0.3s;
-  margin-left: 8px;
-}
-
-.btns:hover {
-  background-color: #e4e4e4;
-}
-
-.rotate-180 {
-  transform: rotate(180deg);
-}
-
-.btns1 {
-  width: 2.2em;
-  padding: 10px;
-  font-size: 20px;
-  text-align: center;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  border: #bfdfff 1px solid;
-  background-color: #0057b300;
-  color: gray;
-  transition: 0.3s;
-  margin-left: 8px;
-}
-
-.nav {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-right: 4em;
-}
-
-.btn:hover {
-  background-color: #e4e7ec;
-  color: black;
-}
-
-.logo {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: auto;
-  border-radius: 12px;
-  height: auto;
+  height: 100%;
   padding: 0 1rem;
-  transition: all 0.3s ease;
 }
 
-.logo-image {
-  width: 4rem; /* Responsive image size */
-  object-fit: contain; /* Better for logos */
+/* New header content container */
+.header-content {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 1rem;
+}
+
+/* Specific toggle button styling */
+.toggle-btn {
+  margin-left: 0.5rem;
+}
+
+.nav-container {
+  grid-area: nav;
+  background-color: #8e8787;
+  border-radius: 0.5rem;
+  padding: 1rem;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: auto;
+  overflow-y: auto;
+}
+
+.nav-container.collapsed {
+  width: 5rem;
+  padding: 1rem 0.5rem;
+}
+
+.nav-container.collapsed .nav-link {
   padding: 0.5rem;
+  justify-content: center;
 }
 
-#item-0.collapsed .logo-image {
-  width: 3.5rem;
+.sub-navigation {
+  grid-area: sub-navigation;
+  background-color: #4e4e4e;
+  border-radius: 0.5rem;
+  position: sticky;
+  top: 3rem;
+  height: 3rem;
+  z-index: 999;
+  display: flex;
+  align-items: center;
 }
 
-.name {
-  font-size: 0.9rem;
-  text-align: center;
-  margin-top: 0.5rem;
-  font-weight: bold;
-  color: #333;
-  max-width: 100%;
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.3s ease, visibility 0.3s ease, max-height 0.3s ease,
-    margin 0.3s ease;
-  max-height: 3rem;
-  margin-bottom: 0.5rem;
+.main-container {
+  grid-area: main;
+  background-color: #3d3d3d;
+  border-radius: 0.5rem;
+  height: calc(95vh - 6rem); /* Adjust for header and sub-navigation */
   overflow: hidden;
-}
-
-.hidden-name {
-  opacity: 0;
-  visibility: hidden;
-  max-height: 0;
-  margin: 0;
-}
-
-#item-2 {
-  background-color: #e5e5e5;
-  grid-area: item-2;
-  grid-row: span 3;
-  overflow-y: auto; /* Enables scrolling */
-  height: calc(95vh - 4em); /* Ensures correct height */
-  border-left: 1px solid #959baa;
-  transition: all 0.3s ease;
-}
-
-#item-2 {
+  padding: 0.5rem;
+  box-sizing: border-box;
   display: grid;
-  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-areas:
-    "box0 box0 box0 box0 "
-    "box1 box1 box1 box1 "
-    "box2 box2 box2 box2 "
-    "box3 box3 box3 box3 "
-    "box4 box4 box4 box4 ";
-  gap: 1em;
-  padding: 16px;
+  grid-template-columns: 25rem auto;
+  grid-template-rows: auto;
+  grid-template-areas: "add-student student";
+  gap: 0.5rem;
 }
 
-.box {
-  border: #adadad 1px solid;
-  background-color: #fffafa;
-  border-radius: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  height: 20rem;
+.nav-link {
+  background-color: #efefef !important;
+  color: rgb(0, 0, 0) !important;
+  border-radius: 5px;
+  transition: all 0.3s ease-in-out;
+  width: 100%;
 }
 
-#box-0 {
-  grid-area: box0;
+.nav-link:hover {
+  background-color: #0056b3 !important;
+  color: #fff !important;
 }
 
-#box-1 {
-  grid-area: box1;
+/* Ensure navbar items are fully responsive */
+.nav-pills {
+  width: 100%;
 }
 
-#box-2 {
-  grid-area: box2;
+.add-container {
+  grid-area: add-student;
+  border-radius: 0.5rem;
+  background-color: aliceblue;
+  text-align: left;
+  padding: 20px;
+  position: relative;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-#box-3 {
-  grid-area: box3;
+.add-container::-webkit-scrollbar {
 }
 
-#box-4 {
-  grid-area: box4;
+.student {
+  grid-area: student;
+  border-radius: 0.5rem;
+  background-color: aliceblue;
+  overflow-y: auto;
 }
 
-#box-5 {
-  grid-area: box5;
+h2 {
+  margin-bottom: 20px;
+  color: #333;
 }
 
-#box-6 {
-  grid-area: box6;
+.input-group {
+  text-align: left;
+  border-radius: 0.5rem;
 }
 
-.cards {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  grid-template-columns: 15em auto;
-  grid-template-areas:
-    "card-1 card-2"
-    "card-1 card-2";
-  gap: 1em;
-  padding: 16px;
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+  color: #555;
 }
 
-#card-1 {
-  grid-area: card-1;
+input,
+select {
+  display: block;
+  height: 45px;
+  width: 100%; /* Full width of container */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.875rem; /* 14px */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
-#card-2 {
-  grid-area: card-2;
+input:focus,
+select:focus {
+  border-color: royalblue;
+  box-shadow: 0 0 5px rgba(65, 105, 225, 0.5);
+  outline: none;
 }
 
-.card {
-  border: #adadad 1px solid;
-  background-color: #fffafa;
-  border-radius: 12px;
-  height: 20rem;
+input:hover,
+select:hover {
+  border-color: royalblue;
+  box-shadow: 0 0 5px rgba(65, 105, 225, 0.5);
+  outline: none;
 }
 
-/* Responsive Adjustments */
+.name-container {
+  display: flex;
+  gap: 8px;
+}
+
+.add-container button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.inpt-grp {
+  width: 100%;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+  color: #555;
+}
+
+.inpt-grp input {
+  border-radius: 4px; /* Rounded corners */
+  border: 1px solid #ccc; /* Subtle border for definition */
+  padding: 8px 12px; /* Comfortable spacing */
+  width: 100%; /* Ensures consistent width */
+  box-sizing: border-box; /* Prevents overflow */
+}
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
 @media (max-width: 768px) {
-  .login-container {
-    grid-template-rows: auto;
+  .box-container {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 5rem 5rem 5rem auto;
     grid-template-areas:
-      "item-0 item-0"
-      "item-1 item-1"
-      "item-2 item-2";
+      "top-header top-header"
+      "nav nav "
+      "sub-navigation sub-navigation"
+      "main main";
   }
 
-  #item-0.collapsed {
-    width: 100%;
-    height: 4em;
-    display: flex;
-    flex-direction: row;
-  }
-
-  .sidebar-collapsed {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 4em auto auto;
-  }
-
-  #item-0.collapsed .button-container {
-    flex-direction: row;
-    overflow-x: auto;
-  }
-
-  #item-0.collapsed .logo {
+  h5 {
     display: none;
   }
+
+  .nav-container {
+    padding: 1rem !important;
+    transition: all 0.3s ease;
+    display: flex !important;
+    flex-direction: row !important;
+  }
+
+  .nav-pills {
+    width: 3rem !important;
+    background-color: #b30000 !important;
+    display: contents;
+    gap: 1rem !important;
+  }
+
+  .nav-container img {
+    object-fit: contain;
+    width: 50% !important;
+    display: none !important;
+  }
+
+  .nav-link {
+    padding: 0.5rem 0.5rem;
+    margin: 0.5rem;
+    display: flex;
+    font-size: 1.8rem;
+    justify-content: center;
+    background-color: #3d3d3d00 !important;
+    color: aliceblue !important;
+  }
+
+  .nav-link:hover {
+    color: #fd1a1a !important;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  /* Center toggle button in responsive mode */
+  .top-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .header-content {
+    display: flex;
+
+    align-items: center;
+    width: 100%;
+  }
+
+  .toggle-btn {
+    margin: 0;
+  }
 }
 
-@media (max-width: 480px) {
-  .login-container {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "item-0"
-      "item-1"
-      "item-2";
-  }
+/* Ensure full screen usage */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 </style>
